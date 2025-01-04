@@ -1,0 +1,2104 @@
+***********************************************************************************
+//Iterative function for inorder tree traversal
+void inOrder(struct Node* root)
+{
+    stack<Node*> s;
+    Node* curr = root;
+ 
+    while (curr != NULL || s.empty() == false) {
+         
+        // Reach the left most Node of the
+        // curr Node
+        while (curr != NULL) {
+             
+            // Place pointer to a tree node on
+            // the stack before traversing
+            // the node's left subtree
+            s.push(curr);
+            curr = curr->left;
+        }
+ 
+        // Current must be NULL at this point
+        curr = s.top();
+        s.pop();
+ 
+        cout << curr->data << " ";
+ 
+        // we have visited the node and its
+        // left subtree.  Now, it's right
+        // subtree's turn
+        curr = curr->right;
+ 
+    }
+}
+***********************************************************************************
+//NOTE - IF THE TREE B IS SUBTREE OF A [LIKE SUBSET]
+bool isequ(Node* a , Node*b){
+    if(a==nullptr && b==nullptr){
+        return true;
+    }
+    if(a==nullptr || b==nullptr){
+        return false;
+    }
+    
+    return ( a->data == b->data && isequ(a->left, b->left) && 
+            isequ(a->right, b->right) );
+}
+
+//Function to check if S is a subtree of tree T.
+bool isSubTree(Node* T, Node* S) 
+{
+    if(S == NULL){
+        return true;    // agr subtree null hy to ho ga hi
+    }
+    
+    if(T==NULL){
+        return false;    // agr main tree hi nahi hy to sub tree nahi ho ga
+    }
+    
+    if(isequ(T,S)){
+        return true;        // agr same hnn to kr do return
+    }
+    
+    return (isSubTree(T->left, S) || isSubTree(T->right, S));  // nahi to agy traverse kro
+    // both left and right side prr
+}
+***********************************************************************************
+//NOTE - CHECK IF A TREE IS BALANCED OR NOTE - 
+// calculate the height.
+int h(Node* n){
+    if(n==nullptr){
+        return 0;
+    }
+    
+    return 1 + max(h(n->left) , h(n->right));
+}
+//Function to check whether a binary tree is balanced or not.
+bool isBalanced(Node *root)
+{
+    if(root==nullptr){
+        return true;
+    }
+    int left = h(root->left);
+    int right = h(root->right);
+    
+    int bf = abs(left-right);
+    
+    if(bf<=1 && isBalanced(root->right) && isBalanced(root->left) ){
+        return true;
+    }
+    
+    return false;
+}
+***********************************************************************************
+//NOTE - GET THE MINIMUM DEPTH OF TREE [INVERSE TO THAT OF HEIGHT]
+[we used INT_MAX here bcz to get some max value and our case dependent min value can align. (0,0) whom to consider?]
+
+int minDepth(Node *root) {
+    if(root==nullptr){
+        return 0;
+    }
+    if(root->right== NULL && root->left==NULL){
+        return 1;
+    }
+    
+    int le=INT_MAX, ri=INT_MAX;
+    
+    if(root->left){
+        le = minDepth(root->left);
+    }
+    
+    if(root->right){
+        ri = minDepth(root->right);
+    }
+    
+    return min(le,ri) + 1;
+}
+***********************************************************************************
+//NOTE - CALCULATE THE DIAMETER OF TREE.
+// get the diameter at only o(n)
+pair<int,int> fasterthenyouthink (Node* root){
+    
+    if(root==nullptr){
+        return {0,0};
+    }
+    
+    pair<int,int> l = fasterthenyouthink(root->left);
+    pair<int,int> r = fasterthenyouthink(root->right);
+    
+    int d1 = l.first;
+    int d2 = r.first;
+    
+    int op = l.second + r.second;
+    
+    return { max(d1, max(d2, op) ) , max(l.second, r.second) + 1};
+}
+
+// Function to return the diameter of a Binary Tree.
+int diameter(Node* root) {
+    return fasterthenyouthink(root).first;
+}
+***********************************************************************************
+//NOTE - CHCEK IF IT IS SUM TREE OR NOT.
+pair<bool, int> fast(Node* root){
+    
+    if(root==nullptr){
+        return {1,0};
+    }
+    
+    // first me bool pra wa, second me sum ya value
+    
+    if(root->left == nullptr && root->right==nullptr){
+        pair<bool, int> j = make_pair(true, root->data);
+        return j;
+    }
+    
+    pair<bool, int> left = fast(root->left);
+    pair<bool, int> right = fast(root->right);
+    
+    bool leftAns = left.first;
+    bool rightAns = right.first;
+    
+    bool condition = (root->data == left.second+right.second);
+    
+    pair<bool, int> ans;
+    
+    if(leftAns && rightAns && condition){
+        ans.first = true;
+        ans.second = root->data + left.second+right.second;
+        return ans;
+    }
+    else{
+        ans.first = false;
+        ans.second = root->data + left.second+right.second;
+        return ans;
+    }
+}
+bool isSumTree(Node* root) {
+    return fast(root).first;
+}
+***********************************************************************************
+//NOTE - CHECK IF THE TREE IS PERFECT BST. [using BFS]
+bool IS_PERFECT(Node* root) {  
+    if(root == nullptr){
+        return true;
+    }
+
+    queue<pair<Node*, int> > q;  // Queue holds pairs of nodes and their levels
+    q.push({root, 0});
+    int leafLevel = -1;  // Variable to store the level of the first encountered leaf node
+
+    while(!q.empty()){
+        
+        Node* node = q.front().first;
+        int level = q.front().second;
+        q.pop();
+
+        // Check if it is a leaf node
+        if(node->left == nullptr && node->right == nullptr){
+            
+            // Set leaf level on first leaf node
+            if(leafLevel == -1){
+                leafLevel = level;
+            }
+            // If any leaf is found at a different level, return false
+            else if(leafLevel != level){
+                return false;
+            }
+        }
+        else{
+            //IF ANY OF THE CHILD IS MISSING, return false
+            if (node->left == nullptr || node->right == nullptr) {
+                return false;
+            }
+            // ADD BOTH CHILDS AND INCREASE LEVEL.
+            q.push({node->left, level + 1});
+            q.push({node->right, level + 1});
+        }
+    }
+
+return true;
+}
+***********************************************************************************
+//NOTE - FUNCTION TO TRAVERSE THE TREE IN ZIGZAG ORDER
+vector <int> zigZagTraversal(Node* root)
+{
+    vector<int> res;
+    if(root==NULL){
+        return res;
+    }
+    
+    queue<Node*> q;
+    q.push(root);
+    
+    int LR = true;
+    
+    while(!q.empty()){
+        
+        int size = q.size();
+        
+        vector<int> ans(size);
+        
+        for(int i=0 ; i<size ; i++){
+
+            Node* temp = q.front();
+            q.pop();
+            
+            int idx = LR ? i : size-i-1;
+            ans[idx] = temp->data;
+            
+            if(temp->left != NULL){
+                q.push(temp->left);
+            }
+            if(temp->right != NULL){
+                q.push(temp->right);
+            }
+        }
+        
+        // change the direction every iteration.
+        LR = !LR;
+        for(auto i : ans){
+            res.push_back(i);
+        }
+    }
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - BOUNDARY K ALONG TRAVERSAL.
+// puri left boundary store kr do vector me.
+void pura_left(Node* root , vector<int> &ans){
+    
+    if(root==NULL){
+        return;
+    }
+    
+    if(root->left==NULL && root->right==NULL){
+        return;
+    }
+    
+    ans.push_back(root->data);      //INORDER [like focus on node]
+    
+    if(root->left){
+        pura_left(root->left , ans);
+    }
+    else{
+        pura_left(root->right , ans);
+    }
+}
+
+// leaf nodes sary utha lo.
+void sary_leaf(Node* root , vector<int> &ans){
+    
+    if(root == NULL){
+        return;
+    }
+    
+    if(root->left==NULL && root->right==NULL){
+        ans.push_back(root->data);
+        return;
+    }
+    
+    sary_leaf(root->left , ans);
+    sary_leaf(root->right , ans);
+}
+
+// puri right side utha lo, sirf last leaf ko chor k.
+void pura_right(Node* root , vector<int> &ans){
+    
+    if(root==NULL){
+        return;
+    }
+    
+    if(root->left==NULL && root->right==NULL){
+        return;
+    }
+    
+    if(root->right){
+        pura_right(root->right , ans);
+    }
+    else{
+        pura_right(root->left , ans);
+    }
+    
+    ans.push_back(root->data);
+}
+
+
+vector <int> boundary(Node *root)
+{
+    vector<int> ans;
+    
+    if(root==NULL){
+        return ans;
+    }
+    
+    ans.push_back(root->data);
+    
+    // sari left side k nodes le ao
+    pura_left(root->left , ans);
+    
+    // ab leaf nodes lao, tree k left wali
+    sary_leaf(root->left , ans);
+    
+    // ab leaf nodes lao, tree k right wali
+    sary_leaf(root->right , ans);
+    
+    // sari right side k nodes le ao
+    pura_right(root->right , ans);
+    
+    
+    return ans;
+    
+}
+***********************************************************************************
+//NOTE - CALCULATE THE MAXIMUM DIFFERENCE FROM THE ROOT NODE IN A TREE, BY COMPARING ALL THE CHILDS OF CHILDS
+int helper(Node* t , int* h){
+    
+    if(t==NULL){
+        return INT_MAX;
+    }
+    
+    if(t->left==NULL && t->right==NULL){
+        return t->data;
+    }
+    
+    int max_diff = min( helper(t->left , h) , helper(t->right , h) );
+    
+    *h = max( *h , t->data-max_diff);
+    
+    return min(max_diff,t->data);
+    
+}
+//Function to return the maximum difference between any node and its ancestor.
+int maxDiff(Node* root)
+{
+    int h = INT_MIN;
+    helper(root,&h);
+    return h;
+}
+***********************************************************************************
+//NOTE - LEFT VIEW OF A TREE.
+vector<int> leftView(Node *root) {
+        
+    vector<int> res;
+    if(root==NULL){
+        return res;
+    }
+    
+    queue<Node*> q;
+    q.push(root);
+    
+    
+    while(!q.empty()){
+        
+        int size = q.size();
+        
+        for(int i=0 ; i<size ; i++){
+            
+            Node* temp = q.front();
+            q.pop();
+            
+            if(i==0){
+                res.push_back(temp->data);
+            }
+            
+            if(temp->left){
+                q.push(temp->left);
+            }
+            
+            if(temp->right){
+                q.push(temp->right);
+            }
+        }
+    }
+    return res;
+}
+***********************************************************************************
+//NOTE - RIGHT VIEW OF BINARY TREE.
+vector<int> rightView(Node *root) {
+    
+    vector<int> res;
+    if (root == NULL) {
+        return res;
+    }
+    
+    queue<Node*> q;
+    q.push(root);
+    
+    while (!q.empty()) {
+        
+        int size = q.size();
+        
+        for (int i = 0; i < size; i++) {
+            
+            Node* temp = q.front();
+            q.pop();
+            
+            // For right view, push the last node of each level
+            if (i == size - 1) {
+                res.push_back(temp->data);
+            }
+            
+            if (temp->left) {
+                q.push(temp->left);
+            }
+            
+            if (temp->right) {
+                q.push(temp->right);
+            }
+        }
+    }
+    return res;
+}
+***********************************************************************************
+//NOTE - INSERTION IN AVL TREE
+// A utility function to 
+// get the height of the tree 
+int height(Node *N) { 
+    if (N == nullptr) 
+        return 0; 
+    return N->height; 
+} 
+
+// A utility function to right 
+// rotate subtree rooted with y 
+Node *rightRotate(Node *y) { 
+    Node *x = y->left; 
+    Node *T2 = x->right; 
+
+    // Perform rotation 
+    x->right = y; 
+    y->left = T2; 
+
+    // Update heights 
+    y->height = 1 + max(height(y->left), 
+                    height(y->right)); 
+    x->height = 1 + max(height(x->left), 
+                        height(x->right)); 
+
+    // Return new root 
+    return x; 
+} 
+
+// A utility function to left rotate 
+// subtree rooted with x 
+Node *leftRotate(Node *x) { 
+    Node *y = x->right; 
+    Node *T2 = y->left; 
+
+    // Perform rotation 
+    y->left = x; 
+    x->right = T2; 
+
+    // Update heights 
+    x->height = 1 + max(height(x->left), 
+                        height(x->right)); 
+    y->height = 1 + max(height(y->left), 
+                        height(y->right)); 
+
+    // Return new root 
+    return y; 
+} 
+
+// Get balance factor of node N 
+int getBalance(Node *N) { 
+    if (N == nullptr) 
+        return 0; 
+    return height(N->left) - height(N->right); 
+} 
+
+// Recursive function to insert a key in 
+// the subtree rooted with node 
+Node* insert(Node* node, int key) { 
+  
+    // Perform the normal BST insertion
+    if (node == nullptr) 
+        return new Node(key); 
+
+    if (key < node->key) 
+        node->left = insert(node->left, key); 
+    else if (key > node->key) 
+        node->right = insert(node->right, key); 
+    else // Equal keys are not allowed in BST 
+        return node; 
+
+    // Update height of this ancestor node 
+    node->height = 1 + max(height(node->left),
+                           height(node->right)); 
+
+    // Get the balance factor of this ancestor node 
+    int balance = getBalance(node); 
+
+    // If this node becomes unbalanced, 
+    // then there are 4 cases 
+
+    // Left Left Case 
+    if (balance > 1 && key < node->left->key) 
+        return rightRotate(node); 
+
+    // Right Right Case 
+    if (balance < -1 && key > node->right->key) 
+        return leftRotate(node); 
+
+    // Left Right Case 
+    if (balance > 1 && key > node->left->key) { 
+        node->left = leftRotate(node->left); 
+        return rightRotate(node); 
+    } 
+
+    // Right Left Case 
+    if (balance < -1 && key < node->right->key) { 
+        node->right = rightRotate(node->right); 
+        return leftRotate(node); 
+    } 
+
+    // Return the (unchanged) node pointer 
+    return node; 
+}
+***********************************************************************************
+//LINK - EXPRESSION BINARY TREE
+string s = "ABC*+D/";
+// If you  wish take input from user:
+//cout << "Insert Postorder Expression: " << endl;
+//cin >> s;
+Stack e;
+expression_tree a;
+node *x, *y, *z;
+int l = s.length();
+for (int i = 0; i < l; i++) {
+    // if read character is operator then popping two
+    // other elements from stack and making a binary
+    // tree
+    if (s[i] == '+' || s[i] == '-' || s[i] == '*'
+        || s[i] == '/' || s[i] == '^') {
+        z = new node(s[i]);
+        x = e.pop();
+        y = e.pop();
+        z->left = y;
+        z->right = x;
+        e.push(z);
+    }
+    else {
+        z = new node(s[i]);
+        e.push(z);
+    }
+}
+***********************************************************************************
+//NOTE - CHECK IF THE PARANTHESIS ARE BALANCED BY Stack.
+bool isParenthesisBalanced(string& s) {
+        
+    stack<char> m;
+    
+    for(char c : s){
+        
+        if(c=='(' || c=='[' || c=='{'){
+            m.push(c);
+        }
+        else if(c==')' || c==']' || c=='}'){
+            
+            if(m.empty()){
+                return false; 
+            }
+            
+            char top = m.top();
+            m.pop();
+            
+            if( c==')' && top!='(' ||
+                c==']' && top!='[' ||
+                c=='}' && top!='{' ){
+                    return false;
+                }
+        }
+    }
+    
+    return m.empty();
+}
+***********************************************************************************
+//NOTE - COMPRESS A GIVEN STRING OF CHARACTERS [aabbaacc] -> [2a2b2a2c]
+string COMPRESS_STRING(string S){
+    
+    string comp;
+    int count=0;
+    
+    int size = S.size();
+    if(size==0){
+        return comp;
+    }
+    else{
+        for(int i=0 ; i<size ; i++){
+            count=1;
+            
+            while( i+1<size && tolower(S[i]) == tolower(S[i+1]) ){
+                count++;
+                i++;
+            }
+            
+            stringstream ss;
+            ss<<count;
+            
+            comp += ss.str();
+            comp += tolower(S[i]);
+        }
+    }
+    
+return comp;
+}
+***********************************************************************************
+//NOTE - NON REPEATING CHARACTERS IN A STRING.
+// Function to find the first non-repeating character in a string.
+char nonRepeatingChar(string &s) {
+    
+    int size=s.length();
+        
+    for(int i=0 ; i<size ; i++){
+        
+        bool yes=false;
+        for(int j=0 ; j<size ; j++){
+            
+            if(i!=j && s[i]==s[j]){
+                yes = true;
+                break;
+            }
+        }
+        
+        if(!yes){
+            return s[i];
+        }
+        
+    }//for ka
+    
+    return '$';
+    
+}
+***********************************************************************************
+//NOTE - CALCULATE THE SUM OF NODES DATA TO EVERY LEAF NODE PATH.
+int ans=0;      // global value that will keep the result.
+void traverse(Node* r , int temp){
+    if(r==NULL) return;
+    
+    temp = temp*10 + r->data;   // update the value in temp
+    
+    // if leaf node is encountered update the answer simply.
+    if( !r->left && !r->right){
+        ans += temp;
+    }
+    
+    // this traversel is a living example of preorder traversal
+    traverse(r->left , temp);
+    traverse(r->right , temp);
+    
+}
+int treePathsSum(Node *root) {
+    
+    if(root==NULL) return ans;
+    
+    // call the get ans function.
+    traverse(root,0);
+    
+    return ans;
+}
+***********************************************************************************
+//LINK - FIRST AND SECOND MINIMUM IN ARRAY, LIST, VECTOR ETC.
+vector<int> minAnd2ndMin(vector<int> &arr) {
+        
+    vector<int> res;
+    int s = arr.size();
+    
+    if(s<2){
+        res.push_back(-1);
+        return res;
+    }
+    
+    set<int> uni(arr.begin() , arr.end());
+    
+    if(uni.size()<2){
+        res.push_back(-1);
+        return res;
+    }
+    
+    auto it = uni.begin();
+    res.push_back(*it);
+    ++it;
+    res.push_back(*it);
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - DIVIDE AN ARRAY IN TO THREE SUB ARRAYS.
+vector<int> findSplit(vector<int>& arr){
+        
+    int sum=0;
+    
+    for(auto it : arr) sum+=it;
+    
+    int s = arr.size();
+    int temp=0 , first=-1, second=-1;
+    int crr=0;  // is me sum ho ga parttions ka
+    
+    // first part nikalo iss trah se k wo*3 == multiple of sum
+    while(temp<s){
+        crr += arr[temp];
+        
+        if(crr*3 == sum){
+            first = temp;
+            temp++;
+            break;
+        }
+        else if(crr*3 > sum){
+            return {-1,-1};
+        }
+        
+        temp++;
+    }
+    
+    crr=0;
+    
+    // second part find kro array ka.
+    while(temp<s){
+        
+        crr += arr[temp];
+        
+        if(crr*3 == sum){
+            second = temp;
+            temp++;
+            break;
+        }
+        else if(crr*3>sum){
+            return {-1,-1};
+        }
+        
+        temp++;
+    }
+    
+    crr = 0;
+    
+    // baki subb elements ka sum nikal lo jo bch gy hnn.
+    while(temp<s){
+        crr += arr[temp];
+        temp++;
+    }
+    
+    if(crr*3 == sum){
+        return {first,second};
+    }
+    else{
+        return {-1,-1};
+    }
+    
+}
+***********************************************************************************
+//NOTE - GET THE SECOND LARGEST IN THE ARRAY.
+int getSecondLargest(vector<int> &arr) {
+    
+    int s = arr.size();
+    
+    if(s<2){
+        return -1;
+    }
+    
+    set<int> uni(arr.begin() , arr.end());
+    
+    if(uni.size()<2){
+        return -1;
+    }
+    
+    auto it = uni.end();
+    --it; 
+    --it;
+    
+return *it;
+}
+***********************************************************************************
+//NOTE - FIND THE MAJORITY ELEMENT IN THE ARRAY. [OCCURANCE > SIZE/2]
+int majorityElement(vector<int>& arr) {
+        
+    int candidate = -1;  
+    int count = 0;  
+
+    // First pass to find the candidate  
+    for(int num : arr){
+        if(count == 0){  
+            candidate = num;  
+        }  
+        count += (num == candidate) ? 1 : -1;  
+    }  
+
+    // Second pass to confirm if candidate is indeed the majority element  
+    count = 0;
+    for(int num : arr){  
+        if(num == candidate){
+            count++;
+        }  
+    }
+
+    return (count > arr.size() / 2) ? candidate : -1;
+}
+***********************************************************************************
+//NOTE - TRAPPING RAIN WATER IN BLOCKS.
+long long trappingWater(vector<int> &arr) {
+        
+    int size = arr.size();
+    
+    int left=1 , right=size-2;
+    long long result=0;
+    
+    int L_max = arr[left-1] , R_max = arr[right+1];
+    
+    while(left<=right){
+        
+        if(R_max<=L_max){
+            result += max ( 0 , R_max - arr[right]);
+            R_max = max ( R_max , arr[right] );
+            right--;
+        }
+        else{
+            result += max ( 0 , L_max - arr[left]);
+            L_max = max ( L_max , arr[left] );
+            left++;
+        }
+    }
+    
+    return result;
+}
+***********************************************************************************
+//NOTE - IS NUMBER THE POWER OF 2?
+bool isPowerofTwo(int n){
+
+    if(n<=0){
+        return false;
+    }
+
+    while(n>1){
+        if(n%2 != 0){
+            return false;
+        }
+        n /= 2;
+    }
+    return true;
+}
+***********************************************************************************
+//NOTE - GET THE MAXIMUM SUM OF ABSOLUTE VALUES.
+long long maxSum(vector<int>& arr) {
+        
+    long long sum=0;
+    
+    int s=arr.size();
+    
+    sort(arr.begin() , arr.end());
+    
+    for(int i=0 ; i<s/2 ; i++){     // traverse kro half tkk or first or second half ka sum nikal lo.
+        
+        sum -= (2 * arr[i] );       // first half ka absolute sum.
+        sum += (2 * arr[s-i-1] );   // second half ka absolute sum.
+    }
+    
+    return sum;
+}
+***********************************************************************************
+//NOTE - FIND THE MINIMUM STEPS REQUIRED TO MAKE A substring A STRING.
+int minRepeats(string& s1, string& s2) {
+        
+    // Given two strings s1 and s2. Return a minimum number 
+    // of times s1 has to be repeated such that s2 is a 
+    // substring of it. If s2 can never be a substring then return -1.
+    // Note: Both the strings contain only lowercase letters.
+    
+    string temp=s1;
+    
+    int mov=1;
+    while(s1.size() < s2.size()){
+        s1 += temp;
+        mov++;
+    }
+    
+    // check after reacing the length is it a substr or not.
+    if(s1.find(s2) != -1){
+        return mov;
+    }
+    
+    s1 += temp;
+    mov++;
+    
+    // check again one time if we made it or not..
+    if(s1.find(s2) != -1){
+        return mov;
+    }
+    
+    return -1;
+}
+***********************************************************************************
+//NOTE - FIND THE DUPLICATES IN THE ARRAY.
+vector<int> findDuplicates(vector<int>& arr) {
+        
+    int c=0;
+    int s = arr.size();
+    
+    sort(arr.begin() , arr.end());
+    
+    vector<int> res;
+    
+    for(int i=1 ; i<arr.size() ; i++){  
+        if(arr[i] == arr[i - 1]){  
+            if (res.empty() || res.back() != arr[i]) {  
+                res.push_back(arr[i]);  
+            }  
+        }  
+    }  
+
+    return res; 
+}
+***********************************************************************************
+//NOTE - STOCK SPAN PROBLEM.
+// helper function.
+int help(vector<int> &y , int idx){
+    
+    int c=1;
+    for(int i=idx-1 ; i>=0 ; i--){
+        if(y[idx] >= y[i]){
+            c++;
+        }
+        else{
+            break;
+        }
+    }
+    return c;
+}
+// Function to calculate the span of stockâ€™s price for all n days.
+vector<int> calculateSpan(vector<int>& arr) {
+    
+    vector<int> res;
+    res.push_back(1);
+    
+    int s = arr.size();
+    
+    for(int i=1 ; i<s ; i++){
+        int cadet = help( arr , i );
+        res.push_back(cadet);
+    }
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - DETECT AND REMOVE LOOP IN LINKED LIST.
+ void removeLoop(Node* head) {
+    
+    if(head == NULL || head->next == NULL){
+        return;
+    }
+
+    Node* slow = head;
+    Node* fast = head;
+
+    // USE FLOYD CYCLE TO DETECT LOOP
+    while( fast!=NULL && fast->next != NULL){
+        slow = slow->next;
+        fast = fast->next->next;
+        
+        if(slow == fast){
+            break;
+        }
+    }
+
+    // NO LOOP[SIMPLE RETURN...]
+    if(slow != fast){
+        return;
+    }
+
+    // LEETS REMOVE THE LOOP [SET ONE AS HEAD.]
+    slow = head;
+    
+    // Special case when the loop starts at the head
+    if(slow == fast){
+        while(fast->next != slow){
+            fast = fast->next;
+        }
+    }
+    else{
+        // Move both pointers at the same pace to find the loop's starting point.
+        while(slow->next != fast->next){
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    
+    // Step 3: Break the loop.
+    fast->next = nullptr;
+}
+***********************************************************************************
+//LINK - ARRANGE THE ELEMENTS IN ORDER TO GET MINIMUM SUM.
+
+string minSum(vector<int> &arr) {
+        
+    int s = arr.size();
+    
+    // first sort kr lo ascending order mee ta k
+    // zayda weightage waly end prr jma ho jain
+    sort(arr.begin() , arr.end());
+    
+    string a="" , b="";
+    
+    // even or odd index ki base prr array ko div kr lo.
+    for(int i=0 ; i<s ; i++){
+        
+        if(i%2 == 0){
+            a += to_string(arr[i]);
+        }
+        else{
+            b += to_string(arr[i]);
+        }
+    }
+    
+    string result;
+    int carry=0 , i= a.size()-1 , j=b.size()-1;
+    
+    // ab dono arrays ka sum nikal lo.
+    //   sum_even_idx_array
+    // + sum_odd_idx_array
+    while(i>=0 || j>=0 || carry){
+        int sum = carry;
+        
+        if(i>=0){
+            sum += a[i--] - '0';
+        }
+        if(j>=0){
+            sum += b[j--] - '0';
+        }
+        
+        result += (sum%10) + '0';   //add 0 will make it to integer, 
+                                    //as we are in string
+                                    //same for uper wala
+        carry = sum/10;
+    }
+    
+    reverse(result.begin(), result.end());
+    
+    // ab array k start me jo 0's hnn n ko remove kr do.
+    string res = result;
+    res.erase(0, res.find_first_not_of('0'));
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - THESE ARE FUNCTIONS TO CHECK IF THERE IS A palindrome SITUATION IN LL
+Node* reverse(Node* head){
+    
+    Node* prev = NULL;
+    Node* curr = head;
+    Node* temp;
+
+    while (curr) {
+        temp = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = temp;
+    }
+    return prev;
+}
+bool checkkrlo(Node* n1 , Node* n2){
+    
+    for( ; n1&&n2 ; n1=n1->next, n2=n2->next){
+        if(n1->data != n2->data) return false;
+    }
+    
+    return true;
+}
+
+// Function to check whether the list is palindrome.
+bool isPalindrome(Node *head){
+    
+    if(!head || !head->next) return 1;
+    
+    Node* slow = head;
+    Node* fast = head;
+    
+    while(fast && fast->next){      // slow prr mid ho ga ll ka.
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    
+    Node* rev = reverse(slow);      // slow se agy reverse kr lo.
+    
+    bool is_pd = checkkrlo(head,rev); // is k badd data compare kr lo agr same hy to return kr do true wrna false.
+    
+    return is_pd;
+    
+}
+***********************************************************************************
+//NOTE - CHECK IF THE STRING ARE ANAGRAM OF EACH OTHER OR NOT.
+bool areAnagrams(string& a, string& b) {
+
+    int c = a.size();
+    int d = b.size();
+    
+    if(c!=d) return false;
+    
+    sort(a.begin() , a.end());          // bhaiya gazab, ascii based sorting hui hy.
+    sort(b.begin() , b.end());
+    
+    return a==b;
+}
+***********************************************************************************
+//NOTE - nCr
+long nCr(int n, int r){
+       
+    if(n<0 || r<0 || r>n){
+        return 0;  // Handle all invalid cases (:
+    }
+    if(r==0 || r==n){
+        return 1;  // some technical Base cases :)
+    }
+
+    // Minimize the number of iterations by choosing 
+    // the smaller of r and n - r
+    if(r>n-r){
+        r = n - r;
+    }
+
+    long result = 1;
+    
+    for(int i=0 ; i<r ; i++){
+        result *= (n - i);
+        result /= (i + 1);
+    }
+
+    return result;
+}
+***********************************************************************************
+//NOTE - CHECK IF THE TREE IS BST OR NOT.
+bool help(Node* root, int min, int max){
+        
+    if(root == NULL){
+        return true;
+    }
+    
+    if(root->data<=min || root->data>=max){
+        return false;
+    }
+    
+    return help(root->left, min, root->data) &&
+            help(root->right, root->data, max);
+}
+bool isBST(Node* root){
+    
+    return help(root, INT_MIN , INT_MAX);
+}
+***********************************************************************************
+//NOTE - TAKE UNION OF ARRAYS.
+// a,b : the arrays
+// Function to return a list containing the union of the two arrays.
+vector<int> findUnion(vector<int> &a, vector<int> &b) {
+    
+    vector<int> res;
+    
+    for(int i:a){
+        res.push_back(i);
+    }
+    
+    for(int i:b){
+        res.push_back(i);
+    }
+    
+    set<int> uni(res.begin() , res.end());
+    
+    return vector<int>(uni.begin(), uni.end());
+    
+}
+***********************************************************************************
+//NOTE - LEADERS OF ARRAY.
+vector<int> leaders(vector<int>& arr) {
+        
+    int s=arr.size();
+    
+    vector<int> res;
+    
+    for(int i=0 ; i<s ; i++){
+        
+        bool flag = true;
+        for(int j=i+1 ; j<s ; j++){
+            if(arr[i] < arr[j]){
+                flag = false;
+                break;
+            }
+        }
+        
+        if(flag){
+            res.push_back(arr[i]);
+        }
+    }
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - FIND THE KTH SMALLEST ELEMENT.
+// k : find kth smallest element and return using this function
+int kthSmallest(vector<int> &arr, int k) {
+    
+    int s=arr.size();
+    if(k<1 || k>s){
+        return -1;
+    }
+    sort(arr.begin() , arr.end());
+    
+    return arr[k-1];
+}
+***********************************************************************************
+//NOTE - BINARY SEARHC ALGO.
+int binarysearch(vector<int> &arr, int k) {
+        
+    int s = arr.size();
+    int left=0 , right=s-1;
+    
+    for(int i=0 ; i<s ; i++){
+        
+        int mid = left + (right-left)/2;
+        
+        if(arr[mid] == k){
+            return mid;
+        }
+        else if(arr[mid] < k){
+            left = mid+1;
+        }
+        else{
+            right = mid-1;
+        }
+    }
+    
+    return -1;
+}
+***********************************************************************************
+//NOTE - FIND THE MIN NUMBER OF INCRIMENTS REQUIRED TO MAKE AN ARRAY UNIQUE.
+int minIncrements(vector<int> arr) {
+        
+    sort(arr.begin() , arr.end());
+    int s=arr.size();
+    int count=0;
+    
+    for(int i=1 ; i<s ; i++){
+        if (arr[i] <= arr[i - 1]) {
+            int increment = arr[i-1]-arr[i]+1;
+            arr[i] += increment;
+            count += increment;
+        }
+    }
+    
+    return count;
+}
+***********************************************************************************
+//ANCHOR - THE AMXIMUM NUMBER OF TOYS [HARD]. 
+***********************************************************************************
+//NOTE - INDEXES OF SUB ARRAYS [1-BASED]
+vector<int> subarraySum(vector<int> &arr, int target) {  
+        
+    int s = arr.size();  
+    vector<int> res;  
+
+    for(int i=0 ; i<s ; i++){
+        
+        int sum = arr[i];  
+        
+        // Check the current element itself  
+        if(sum == target){  
+            res.push_back(i + 1);  
+            res.push_back(i + 1);  
+            return res;  
+        }  
+
+        for(int j=i+1 ; j<s ; j++){
+            
+            sum += arr[j];  
+            
+            if(sum == target){  
+                res.push_back(i + 1);  // 1-based index for start  
+                res.push_back(j + 1);  // 1-based index for end  
+                return res;  
+            }  
+            
+            // If the sum exceeds the target, no point in continuing  
+            if(sum > target){  
+                break;  
+            }  
+        }  
+    }  
+
+    res.push_back(-1);  
+    return res;  
+}
+***********************************************************************************
+//NOTE - CAN ATTEND A MEETING OR NOT.
+bool canAttend(vector<vector<int>> &arr) {
+        
+    sort(arr.begin() , arr.end() );
+    
+    for(int i=1 ; i<arr.size() ; i++){
+        if(arr[i][0] < arr[i-1][1]){
+            return false;
+        }
+    }
+    return true;
+}
+***********************************************************************************
+//NOTE - INTERSECTION POINT IN LL 
+int intersectPoint(Node* head1, Node* head2) {  
+    
+    if(!head1 || !head2){
+        return -1;
+    }
+
+    Node* a = head1;  
+    Node* b = head2;  
+
+    // Traverse both lists  
+    while(a != b){  
+        // Switch to the head of the other
+        // this will occur at end.
+        a = (a == nullptr) ? head2 : a->next;  
+        b = (b == nullptr) ? head1 : b->next;  
+    }  
+
+    return (a!=nullptr) ? a->data : -1;  
+}
+***********************************************************************************
+//NOTE - COUNT THE NUMBER OF INVERSIONS REQUIRED TO SORT AN ARRAY.
+// Helper function to merge two halves and count inversions.
+int mergeAndCount(vector<int>& arr, int left, int mid, int right) {
+    int i = left, j = mid + 1, k = 0;
+    int inversionCount = 0;
+    vector<int> temp(right - left + 1);
+
+    // Merging two halves while counting inversions.
+    while (i <= mid && j <= right) {
+        if (arr[i] <= arr[j]) {
+            temp[k++] = arr[i++];
+        } else {
+            temp[k++] = arr[j++];
+            inversionCount += (mid - i + 1);  // Count inversions.
+        }
+    }
+
+    // Copy remaining elements from the left half.
+    while (i <= mid) {
+        temp[k++] = arr[i++];
+    }
+
+    // Copy remaining elements from the right half.
+    while (j <= right) {
+        temp[k++] = arr[j++];
+    }
+
+    // Copy sorted elements back into the original array.
+    for (i = left, k = 0; i <= right; i++, k++) {
+        arr[i] = temp[k];
+    }
+
+    return inversionCount;
+}
+
+// Function to recursively divide the array and count inversions.
+int mergeSortAndCount(vector<int>& arr, int left, int right) {
+    int inversionCount = 0;
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        
+        inversionCount += mergeSortAndCount(arr, left, mid);
+        inversionCount += mergeSortAndCount(arr, mid + 1, right);
+        inversionCount += mergeAndCount(arr, left, mid, right);
+    }
+    return inversionCount;
+}
+
+// Wrapper function to count inversions.
+int inversionCount(vector<int>& arr) {
+    return mergeSortAndCount(arr, 0, arr.size() - 1);
+}
+***********************************************************************************
+void nearlySorted(vector<int>& arr, int k){
+        
+    priority_queue < int, vector<int> , greater<int> > minHeap;
+    
+    int n = arr.size();
+
+    // Build a min-heap for the first k+1 elements
+    for(int i=0 ; i<=k && i<n ; ++i){
+        minHeap.push(arr[i]);
+    }
+
+    int index = 0;
+    
+    // Process the remaining elements
+    for(int i=k+1 ; i<n ; i++){
+        // Pop the smallest element and place it in the result array
+        arr[index++] = minHeap.top();
+        minHeap.pop();
+        // Push the current element into the heap
+        minHeap.push(arr[i]);
+    }
+
+    // Place the remaining elements from the heap into the result array
+    while( !minHeap.empty() ){
+        arr[index++] = minHeap.top();
+        minHeap.pop();
+    }
+}
+***********************************************************************************
+//NOTE - ROTATE AN ARRAY BY D POSITIONS.
+// Function to rotate an array by d elements in counter-clockwise direction.
+void rotateArr(vector<int>& arr, int d){
+    
+    int s=arr.size();
+    
+    d = d%s;
+    
+    vector<int> res(s);
+    
+    for(int i=0 ; i<s-d ; i++){
+        res[i] = arr[d+i];
+    }
+    
+    for(int i=0 ; i<d ; i++){
+        res[s-d+i] = arr[i];
+    }
+    
+    for(int i=0 ; i<s ; i++){
+        arr[i] = res[i];
+    }
+    
+    return;
+}
+***********************************************************************************
+//NOTE - HARD PRBLEM [MERGE TO SORTED ARRAYS]
+void mergeArrays(vector<int>& a, vector<int>& b) {
+    
+    int i=a.size()-1;
+    int j=0;
+    
+    while( i>=0 && j<b.size() && a[i] > b[j]){
+        swap(a[i--] , b[j++]);
+    }
+    
+    sort( a.begin() , a.end() );
+    sort( b.begin() , b.end() );
+}
+***********************************************************************************
+//NOTE - NEXT_PERMUTATION:
+void nextPermutation(vector<int>& arr) {    
+    next_permutation(arr.begin() , arr.end());
+}
+***********************************************************************************
+//NOTE - MAJORITY ELEMENT [>N/3]
+// Function to find the majority elements in the array
+vector<int> findMajority(vector<int>& arr) {
+    
+    int n = arr.size();  
+    
+    if(n == 0){
+        return{};
+    }
+
+    sort(arr.begin(), arr.end());  
+    
+    vector<int> res;  
+    int c = 1;  
+    int d = n / 3;  
+
+    for(int i=1 ; i<n ; i++){
+        
+        if(arr[i] == arr[i-1]){  
+            c++; 
+        }
+        else{
+            if(c>d){
+                res.push_back(arr[i-1]);  
+            }  
+            c=1;  
+        }  
+    }  
+    
+    if(c>d){
+        res.push_back(arr[n-1]);  
+    }  
+
+    return res;
+}
+***********************************************************************************
+//LINK - [MULTIPLE TRANSECTION ALLOWED HARD] MAX PROFIT DAY TO BUY AND SELL STOCKS.
+int maximumProfit(vector<int> &p) {
+        
+    int s=p.size();
+    int res=0;
+    
+    for(int i=1 ; i<s ; i++){
+        if(p[i] > p[i-1]){
+            res += p[i] - p[i-1];
+        }
+    }
+    
+return res;
+}
+***********************************************************************************
+//NOTE - SINGLE TRANSECTION ALLOWED. [FIND MAX PROFIT]
+int maximumProfit(vector<int> &p) {
+        
+    int res=0;
+    int mini = p[0];
+    
+    for(int i=0 ; i<p.size() ; i++){
+        mini = min(mini , p[i]);
+        res  = max(res , p[i]-mini);
+    }
+    
+    return res;
+}
+***********************************************************************************
+//NOTE - FIND THE EQUILIBRIUM POINT IN THE ARRAY.
+// Function to find equilibrium point in the array.
+int equilibriumPoint(vector<int> &arr) {
+    
+    int s=arr.size();
+    
+    if(s==0){
+        return -1;
+    }
+    
+    int total=0;
+    
+    for(int i:arr){
+        total += i;
+    }
+    
+    int ls=0;
+    
+    for(int i=0 ; i<s ; i++){
+        total -= arr[i];
+        
+        if(ls == total){
+            return i+1;
+        }
+        ls +=arr[i];
+    }
+    
+    return -1;
+}
+***********************************************************************************
+//NOTE - KADANE ALGORITHM
+// sub array ka largest sum nikal kr ddo bhaiya
+int max_sum_kadane(vector<int> arr){
+
+    int res = arr[0];
+    int temp = arr[0];
+
+    for(int i=0; i<arr.size() ; i++){
+        temp = max( temp+arr[i] , arr[i] );
+        res = max( res, tmep );
+    }
+    return res;
+}
+***********************************************************************************
+//NOTE - MAX PRODUCT OF SUBARRAY.
+// Function to find maximum product subarray
+int maxProduct(vector<int> &a) {
+    
+    int s=a.size();
+    int ltr=1;
+    int rtl=1;
+    int prod = INT_MIN;
+    
+    for(int i=0 ; i<s ; i++){
+        if(ltr==0){
+            ltr=1;
+        }
+        if(rtl==0){
+            rtl=1;
+        }
+        ltr *= a[i];
+        int j=s-i-1;
+        rtl *= a[j];
+        prod = max(ltr,max(rtl,prod));
+    }
+    return prod;
+}
+***********************************************************************************
+//NOTE - Function to find the smallest positive number missing from the array.
+int missingNumber(vector<int> &arr) {
+    
+    int s=arr.size();
+    sort(arr.begin() , arr.end());
+    
+    int min_limit=1;
+    
+    for(int i=0 ; i<s ; i++){
+        
+        if(arr[i] == min_limit){
+            min_limit++;
+        }
+        else if(arr[i]>min_limit){
+            break;
+        }
+    }
+    return min_limit;
+}
+***********************************************************************************
+//NOTE - USE KMP ALGORITHM TO GET THE COUNT FOR PALINDROME.
+int minChar(string& s){
+        
+    string rev = s;
+    reverse(rev.begin(), rev.end());
+    string combined = s + "#" + rev;
+
+    int n = combined.size();
+    vector<int> lps(n, 0);
+
+    for (int i = 1; i < n; i++) {
+        int j = lps[i - 1];
+        while (j > 0 && combined[i] != combined[j]) {
+            j = lps[j - 1];
+        }
+        if (combined[i] == combined[j]) {
+            j++;
+        }
+        lps[i] = j;
+    }
+
+    return s.size() - lps[n - 1];
+} 
+***********************************************************************************
+//NOTE - THE INTERVAL WILL OVERLAP IF THE UPCOMING START IS SMALLER THEN THE PREVIOUS ONE.
+int minRemoval(vector<vector<int>> &s) {
+        
+    sort(s.begin() , s.end());
+    
+    int start = s[0][1];
+    
+    int count=0;
+    
+    for(int i=1 ; i<s.size() ; i++){
+        
+        if(s[i][0] < start){
+            count++;
+            start = min(start , s[i][1]);
+        }
+        else{
+            start = s[i][1];
+        }
+    }
+    
+    return count;
+}
+***********************************************************************************
+//LINK - AGGRESSIVE COW PLACEMENT.
+//helper function to see if the current index is valid for doing all the max cow placment or not.
+bool cow(vector<int>& r , int k , int dist){
+        
+    int place_it = 1;       // Place the first cow at the first stall
+    int first_pos = r[0];
+
+    for(int i=1 ; i<r.size() ; i++) {
+        if(r[i] - first_pos >= dist) {
+            place_it++;
+            first_pos = r[i];
+            if(place_it == k){
+                return true;
+            }
+        }
+    }
+    
+return false;
+}
+// main binary search function that divides the arrray in two halfs and then bruteforce for each element.
+int aggressiveCows(vector<int> &stalls , int k) {
+
+    sort(stalls.begin() , stalls.end());
+    
+    int res = 0;
+    
+    int min=1;
+    int max = stalls.back() - stalls[0];
+    
+    while(min<=max){
+        
+        int mid = min + (max - min) / 2;
+
+        if(cow(stalls, k, mid)){
+            res = mid;           // Update result if cows can be placed
+            min = mid + 1;       // Try for a larger minimum distance
+        }
+        else{
+            max = mid - 1;       // Try for a smaller minimum distance
+        }
+    }
+    return res;
+}
+***********************************************************************************
+//NOTE - FIND THE MINUM ALLOCATION OF PAGES IN A BOOK PER STUDENT.
+// helper fuction to look depper in it.
+bool lookatme(vector<int> a , int k , int limit){
+    
+    int count=1;
+    int page_sum=0;
+    
+    for(int i=0 ; i<a.size() ; i++){
+        if(page_sum + a[i] > limit){
+            count++;
+            page_sum = a[i];
+        }
+        else{
+            page_sum += a[i];
+        }
+    }
+    
+    return (count<=k);
+}
+
+
+// main function
+int findPages(vector<int> &arr, int k) {
+    
+    if(k>arr.size()){
+        return -1;
+    }
+    
+    int low  = *max_element(arr.begin() , arr.end());
+    int high = accumulate(arr.begin() , arr.end() , 0);
+    
+    int result = -1;
+    
+    while(low<=high){
+        int mid = low + (high-low)/2;
+        
+        if(lookatme(arr , k , mid)){
+            result = mid;
+            high = mid-1;
+        }
+        else{
+            low = mid+1;
+        }
+    }
+    
+    return result;
+} 
+***********************************************************************************
+//NOTE - SPIRAL TRAVERSAL OF MATRIX.
+vector<int> spirallyTraverse(vector<vector<int> > &mat) {
+        
+    vector<int> result;
+    
+    
+    // what if the vector is empty.
+    if(mat.empty()){
+        return result;
+    }
+
+    int n = mat.size();
+    int m = mat[0].size();
+
+    int top=0 , bottom=n-1 , left=0 , right=m-1;
+
+    while(top<=bottom && left<=right){
+        
+        // Traverse from left to right
+        for(int i=left ; i<=right ; i++){
+            result.push_back(mat[top][i]);
+        }
+        top++;
+
+        // Traverse from top to bottom
+        for(int i=top ; i<=bottom ; i++){
+            result.push_back(mat[i][right]);
+        }
+        right--;
+
+        if(top<=bottom){
+            // Traverse from right to left
+            for(int i=right ; i>=left ; i--){
+                result.push_back(mat[bottom][i]);
+            }
+            bottom--;
+        }
+
+        if(left<=right){
+            // Traverse from bottom to top
+            for(int i=bottom ; i>=top ; i--){
+                result.push_back(mat[i][left]);
+            }
+            left++;
+        }
+    }
+
+return result;
+}
+***********************************************************************************
+//NOTE - SET THE CORRESPONDING ROWS AND COLUMNS TO 0. [MATRIX PROB.]
+void setMatrixZeroes(vector<vector<int>> &mat) {
+        
+    int n = mat.size();
+    int m = mat[0].size();
+    
+    vector<bool> kill_1(n,false) , kill_2(m,false);
+    
+    // ye temp vector hy constant space somplexity jesty k required thee
+    // nxm size hy or by default sbb false hnn.
+    for(int i=0 ; i<n ; i++){
+        for(int j=0 ; j<m ; j++){
+            
+            if(mat[i][j]==0){
+                kill_1[i] = true;
+                kill_2[j] = true;
+            }
+            
+        }
+    }
+    
+    
+    // agr in mee se jis row ya col ki position prr 0 tha to uss k 
+    // corresponding entity ko hi 0 kr do, as per the condition.
+    for(int i=0 ; i<n ; i++){
+        for(int j=0 ; j<m ; j++){
+            
+            if(kill_1[i] || kill_2[j]){
+                mat[i][j] = 0;
+            }
+            
+        }
+    }
+    
+    return;
+}
+***********************************************************************************
+//NOTE - ISOMORPHIC TREES. [simple check if orignal trees are identical && by swaping they are identical thats all]
+bool isIsomorphic(Node* root1, Node* root2) {
+        
+    if(root1==nullptr && root2==nullptr){
+        return true;
+    }
+    
+    if(root1==nullptr || root2==nullptr){
+        return false;
+    }
+    
+    if(root1->data != root2->data){
+        return false;
+    }
+    
+    return ( isIsomorphic( root1->left , root2->left  ) && isIsomorphic( root1->right , root2->right) ) ||
+            ( isIsomorphic( root1->left , root2->right ) && isIsomorphic( root1->right , root2->left ) ) ;   
+}
+***********************************************************************************
+//NOTE - GROUP ANAGRAMS TOGETHER.
+vector<vector<string>> anagrams(vector<string>& arr) {
+        
+    unordered_map<string, vector<string>> test;
+
+    // yaha prr grouping ki hy sortied form me
+    for(const string& str : arr){
+        string sort_me = str;
+        sort(sort_me.begin(), sort_me.end());           // yrr dekho pair hy test, string and vector of strings.
+        test[sort_me].push_back(str);                   // to hmm hrr new entry ko sort kr k check kr le gy
+    }                                                   // or any waly ko uss k corresponding vector mee dal denn gy
+                                                        // phir ku k (string, vector<string>) to hmmy pta hy 2nd prr para hua hmara data
+                                                        // uss second ko hmm use kr k aik 2d vector populate kr le gy or uss ko return kr den gy.
+    // populate the result_vector and return.
+    vector<vector<string>> result;
+    for(const auto& group : test){
+        result.push_back(group.second);
+    }
+
+return result;
+} 
+***********************************************************************************
+//NOTE - VALIDATE THE IP ADDRESS.
+// helper function.
+bool valid(const string& s){
+    
+    if(s.empty() || s.size()>3){
+        return 0;
+    }
+    if( s.size()>1 && s[0]=='0'){
+        return 0;
+    }
+    for(char i : s){
+        if(!isdigit(i)){
+            return 0;
+        }
+    }
+    int val = stoi(s);
+    return (val>=0 && val<=255);
+}
+
+// main function
+int isValid(string& s) {
+    
+    stringstream ss(s);
+    string segment;
+    int count=0;
+    
+    while(getline(ss,segment,'.')){
+        if(valid(segment)){
+            count++;
+        }
+        else{
+            return 0;
+        }
+    }
+    return (count==4);
+}
+***********************************************************************************
+//NOTE - NUMBER OF SUBARRAY XOR TO TARGET.
+long subarrayXor(vector<int> &arr, int k) {
+        
+    unordered_map<int, int> res;
+    
+    int temp=0;
+    
+    long int count=0;
+    
+    for(int i:arr){
+        
+        temp ^= i;
+        
+        if(temp == k){
+            count++;
+        }
+        
+        if(res.find(temp^k) != res.end()){
+            count += res[temp^k];
+        }
+        
+        res[temp]++;
+    }
+    
+    return count;
+}
+***********************************************************************************
+//NOTE - // Function to count the number of digits in n that evenly divide n
+int evenlyDivides(int n){
+    
+    int count=0;
+    
+    int save = n;
+    
+    while(n>0){
+        int temp = n%10;
+        
+        if(temp){
+            if(save%temp == 0){
+                count++;
+            }
+        }
+        
+        n /= 10;
+    }
+    
+    return count;
+}
+***********************************************************************************
+//NOTE - COUNT TRIPPLETS WITH ADDITIONAL EDGE CASES [L->R && R->L]
+int countTriplets(vector<int> &arr, int target){
+    int size = arr.size();
+    int count=0;
+    for(int i=0 ; i<size ; i++){
+        int l=i+1 , r=size-1;
+        while(l<r){
+            int sum = arr[i] + arr[l] + arr[r];
+            if(sum == target){
+                int temp1=arr[l] , crr1=0 , temp2=arr[r] , crr2=0;
+                while(l<=r && arr[l] == temp1){
+                    l++;
+                    crr1++;
+                }
+                while(l<=r && arr[r] == temp2){
+                    r--;
+                    crr2++;
+                }
+                count += (temp1==temp2) ? (crr1*(crr1-1)) / 2 : crr1*crr2;
+            }
+            else if(sum>target){
+                r--;
+            }
+            else{
+                l++;
+            }
+        }
+    }
+    return count;
+}
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************
+
+***********************************************************************************

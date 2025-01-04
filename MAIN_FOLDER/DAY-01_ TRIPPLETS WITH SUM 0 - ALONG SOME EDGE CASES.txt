@@ -1,0 +1,48 @@
+
+
+//NOTE - COUNT TRIPPLETS WITH ADDITIONAL EDGE CASES [L->R && R->L]
+
+// WE CAN USE HASH MAP FOR THIS PROBLEM, BUT THE ISSUE ARRISES WHERE WE HAVE 
+// TO RECONSIDER THE ALREADY MARKED MEMBER OF SUBARRAY.
+
+int countTriplets(vector<int> &arr, int target){
+    
+    int size = arr.size();
+    int count=0;
+
+    for(int i=0 ; i<size ; i++){
+        
+        int l=i+1 , r=size-1;
+
+        // A KIND OF BINARY TRAVERSAL FROM BOTH THE ENDS.
+        while(l<r){
+    
+            int sum = arr[i] + arr[l] + arr[r];
+    
+            if(sum == target){
+                int temp1=arr[l] , crr1=0 , temp2=arr[r] , crr2=0;
+    
+                // COUNT LEFT TO RIGHT 
+                while(l<=r && arr[l] == temp1){
+                    l++;
+                    crr1++;
+                }
+    
+                // COUNT RIGHT TO LEFT.
+                while(l<=r && arr[r] == temp2){
+                    r--;
+                    crr2++;
+                }
+                count += (temp1==temp2) ? (crr1*(crr1-1)) / 2 : crr1*crr2;
+            }
+            else if(sum>target){
+                r--;
+            }
+            else{
+                l++;
+            }
+        }
+    }
+    
+    return count;
+}
