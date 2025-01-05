@@ -1,0 +1,31 @@
+// THE WAS AN EASY PROBLEM, USED THE GREEDY APPROACH HERE
+// TRAVERSED FROM BOTH THE ENDS TO GET A COMMON PAIR.
+//  AFTER SORTING THE ARRAY AT [N.LOG(N)]
+
+#include<bits/stdc++.h>
+
+using namespace std;
+
+int COUNT_PAIRS(vector<int> &arr, int target) {
+        
+    sort(arr.begin() , arr.end());
+    
+    int count=0,sum=0;
+    
+    int left=0, right=arr.size()-1;
+    
+    while(left<right){
+        
+        sum = arr[left] + arr[right];
+        
+        if(sum<target){
+            count += right-left;
+            left++;
+        }
+        else{
+            right--;
+        }
+    }
+    
+return count;
+}
